@@ -7,15 +7,20 @@
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
         <junit.version>5.7.0</junit.version>
+
+        <maven-gpg-plugin>1.6</maven-gpg-plugin>
+        <maven-javadoc-plugin>3.2.0</maven-javadoc-plugin>
+        <maven-nexus-staging-plugin>1.6.8</maven-nexus-staging-plugin>
+        <maven-source-plugin>3.2.1</maven-source-plugin>
     </properties>
 
-    <groupId>io.moquette</groupId>
+    <groupId>de.fraunhofer.iosb.io.moquette</groupId>
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>
     <version>0.16-SNAPSHOT</version>
-    <name>Moquette MQTT</name>
-    <description>Moquette lightweight MQTT Broker</description>
+    <name>Moquette MQTT + patches</name>
+    <description>Moquette lightweight MQTT Broker, with added patches.</description>
     <inceptionYear>2011</inceptionYear>
     <url>http://moquette.io</url>
 
@@ -41,13 +46,22 @@
             </roles>
             <timezone>+1</timezone>
         </developer>
+        <developer>
+            <id>scf</id>
+            <name>Hylke van der Schaaf</name>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:moquette-io/moquette.git</connection>
-        <developerConnection>scm:git:git@github.com:moquette-io/moquette.git</developerConnection>
-        <url>git@github.com:moquette-io/moquette.git</url>
-    </scm>
+        <connection>scm:git:git@github.com:FraunhoferIOSB/moquette.git</connection>
+        <developerConnection>scm:git:git@github.com:FraunhoferIOSB/moquette.git</developerConnection>
+        <url>git@github.com:FraunhoferIOSB/moquette.git</url>
+        <tag>HEAD</tag>
+  </scm>
 
     <modules>
         <module>broker</module>
@@ -168,6 +182,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven-source-plugin}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -181,6 +196,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven-javadoc-plugin}</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -194,6 +210,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-gpg-plugin}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -210,6 +227,17 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>${maven-nexus-staging-plugin}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -243,7 +271,8 @@
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
+
 </project>

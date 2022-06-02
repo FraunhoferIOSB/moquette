@@ -4,7 +4,7 @@
     <parent>
         <relativePath>../pom.xml</relativePath>
         <artifactId>moquette-parent</artifactId>
-        <groupId>io.moquette</groupId>
+        <groupId>de.fraunhofer.iosb.io.moquette</groupId>
         <version>0.16-SNAPSHOT</version>
     </parent>
 
