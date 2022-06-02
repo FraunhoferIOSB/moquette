@@ -7,18 +7,21 @@
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
         <junit.version>5.7.0</junit.version>
-        <slf4j.version>1.7.36</slf4j.version>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+		<slf4j.version>1.7.36</slf4j.version>
+
+        <maven-gpg-plugin>1.6</maven-gpg-plugin>
+        <maven-javadoc-plugin>3.2.0</maven-javadoc-plugin>
+        <version.maven.plugin.central-publishing>0.7.0</version.maven.plugin.central-publishing>
+        <maven-source-plugin>3.2.1</maven-source-plugin>
     </properties>
 
-    <groupId>io.moquette</groupId>
+    <groupId>de.fraunhofer.iosb.io.moquette</groupId>
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>0.19-SNAPSHOT</version>
-    <name>Moquette MQTT</name>
-    <description>Moquette lightweight MQTT Broker</description>
+    <version>0.18.1-SNAPSHOT</version>
+    <name>Moquette MQTT + patches</name>
+    <description>Moquette lightweight MQTT Broker, with added patches.</description>
     <inceptionYear>2011</inceptionYear>
     <url>http://moquette.io</url>
 
@@ -44,18 +47,27 @@
             </roles>
             <timezone>+1</timezone>
         </developer>
+        <developer>
+            <id>scf</id>
+            <name>Hylke van der Schaaf</name>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:moquette-io/moquette.git</connection>
-        <developerConnection>scm:git:git@github.com:moquette-io/moquette.git</developerConnection>
-        <url>git@github.com:moquette-io/moquette.git</url>
-    </scm>
+        <connection>scm:git:git@github.com:FraunhoferIOSB/moquette.git</connection>
+        <developerConnection>scm:git:git@github.com:FraunhoferIOSB/moquette.git</developerConnection>
+        <url>git@github.com:FraunhoferIOSB/moquette.git</url>
+        <tag>v0.18.x</tag>
+  </scm>
 
     <modules>
         <module>broker</module>
-        <module>distribution</module>
-        <module>embedding_moquette</module>
+        <!-- module>distribution</module -->
+        <!-- module>embedding_moquette</module -->
     </modules>
 
     <dependencies>
@@ -190,6 +202,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven-source-plugin}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -203,6 +216,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven-javadoc-plugin}</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -216,6 +230,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-gpg-plugin}</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -233,39 +248,18 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>${version.maven.plugin.central-publishing}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                        </configuration>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
     </profiles>
 
-    <repositories>
-        <repository>
-            <id>Maven repo</id>
-            <url>https://repo1.maven.org/maven2/</url>
-        </repository>
-
-        <repository>
-            <id>Paho Releases</id>
-            <url>https://repo.eclipse.org/content/repositories/paho-releases/</url>
-        </repository>
-
-        <repository>
-            <id>sonatype-snapshots</id>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-    </distributionManagement>
 </project>

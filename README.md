@@ -3,6 +3,8 @@
 [![](https://jitpack.io/v/moquette-io/moquette.svg)](https://jitpack.io/#moquette-io/moquette)
 
 ## Moquette MQTT broker
+This is a modified version of the Moquette MQTT broker.
+
 [Documentation reference guide](http://moquette-io.github.io/moquette/) Guide on how to use and configure Moquette
 
 Moquette is a lightweight broker compliant with MQTT 5 and MQTT 3, easily encapsulated in other applications.
@@ -25,22 +27,10 @@ We would love :heart: to hear from Moquette users, please [let us know how you u
 
 ## Embedding in other projects
 
-Use JitPack to resolve Moquette dependency in your project. 
-
-In repositories section, add:
-```
-<repositories>
-  <repository>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-  </repository>
-</repositories>
-```
-
-In dependencies section add:
+This version of Moquette is available on Maven Central. In dependencies section of your pom.xml add:
 ```
 <dependency>
-  <groupId>com.github.moquette-io.moquette</groupId>
+  <groupId>de.fraunhofer.iosb.io.moquette</groupId>
   <artifactId>moquette-broker</artifactId>
   <version>0.18.0</version>
 </dependency>
@@ -48,7 +38,7 @@ In dependencies section add:
 
 ## Build from sources
 
-After a git clone of the repository, cd into the cloned sources and: `./gradlew package`, at the end the distribution 
+After a git clone of the repository, cd into the cloned sources and: `./mvnw install`, at the end the distribution 
 package is present at `distribution/target/distribution-0.19-SNAPSHOT-bundle.tar.gz`
 
 In distribution/target directory will be produced the selfcontained file for the broker with all dependencies and a running script. 
