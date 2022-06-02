@@ -39,7 +39,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -128,15 +127,15 @@ public class SessionRegistry {
     private final IQueueRepository queueRepository;
     private final Authorizator authorizator;
 
-    // TODO: Make timeout configurable
-    private final TemporalAmount defaultTimeout = Duration.of(1, ChronoUnit.MINUTES);
+    private final TemporalAmount defaultTimeout;
 
     SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory,
                     IQueueRepository queueRepository,
-                    Authorizator authorizator) {
+                    Authorizator authorizator, long sessionTimeoutSeconds) {
         this.subscriptionsDirectory = subscriptionsDirectory;
         this.queueRepository = queueRepository;
         this.authorizator = authorizator;
+        this.defaultTimeout = Duration.of(sessionTimeoutSeconds, ChronoUnit.SECONDS);
         recreateSessionPool();
     }
 
