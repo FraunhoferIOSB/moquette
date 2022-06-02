@@ -65,8 +65,8 @@
 
     <modules>
         <module>broker</module>
-        <module>distribution</module>
-        <module>embedding_moquette</module>
+        <!-- module>distribution</module -->
+        <!-- module>embedding_moquette</module -->
     </modules>
 
     <dependencies>
