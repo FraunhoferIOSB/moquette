@@ -6,8 +6,8 @@
         <!--<netty.version>4.1.12.Final</netty.version>-->
         <source.version>1.8</source.version>
         <target.version>1.8</target.version>
-        <junit.version>5.7.0</junit.version>
-        <slf4j.version>1.7.36</slf4j.version>
+        <junit.version>5.9.3</junit.version>
+        <slf4j.version>2.0.7</slf4j.version>
 
         <maven-gpg-plugin>1.6</maven-gpg-plugin>
         <maven-javadoc-plugin>3.2.0</maven-javadoc-plugin>
@@ -103,21 +103,21 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.6.0</version>
+            <version>4.10.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>2.6.0</version>
+            <version>3.24.2</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.0.3</version>
+            <version>4.2.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -152,7 +152,7 @@
                 <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-checkstyle-plugin</artifactId>
-                  <version>2.17</version>
+                  <version>3.2.2</version>
                   <configuration>
                       <configLocation>checkstyle.xml</configLocation>
                       <!--<suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>-->
