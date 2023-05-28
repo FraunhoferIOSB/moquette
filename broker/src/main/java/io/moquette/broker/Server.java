@@ -182,7 +182,7 @@ public class Server {
         subscriptions.init(subscriptionsRepository);
         final Authorizator authorizator = new Authorizator(authorizatorPolicy);
         final long sessionTimeoutSeconds = config.intProp(BrokerConstants.SESSION_TIMEOUT_SECONDS_NAME, BrokerConstants.DEFAULT_SESSION_TIMEOUT_SECONDS);
-        sessions = new SessionRegistry(subscriptions, queueRepository, authorizator,sessionTimeoutSeconds);
+        sessions = new SessionRegistry(subscriptions, queueRepository, interceptor, authorizator, sessionTimeoutSeconds);
 
         final int sessionQueueSize = config.intProp(BrokerConstants.SESSION_QUEUE_SIZE, 1024);
         dispatcher = new PostOffice(subscriptions, retainedRepository, sessions, interceptor, authorizator,

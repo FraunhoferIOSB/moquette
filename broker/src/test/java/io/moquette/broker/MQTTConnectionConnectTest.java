@@ -71,7 +71,8 @@ public class MQTTConnectionConnectTest {
 
         final PermitAllAuthorizatorPolicy authorizatorPolicy = new PermitAllAuthorizatorPolicy();
         final Authorizator permitAll = new Authorizator(authorizatorPolicy);
-        sessionRegistry = new SessionRegistry(subscriptions, queueRepository, permitAll, DEFAULT_SESSION_TIMEOUT_SECONDS);
+        sessionRegistry = new SessionRegistry(subscriptions, queueRepository, ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR,
+                                    permitAll, DEFAULT_SESSION_TIMEOUT_SECONDS);
         postOffice = new PostOffice(subscriptions, new MemoryRetainedRepository(), sessionRegistry,
                                     ConnectionTestUtils.NO_OBSERVERS_INTERCEPTOR, permitAll, 1024);
 

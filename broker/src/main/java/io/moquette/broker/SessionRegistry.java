@@ -19,6 +19,7 @@ import io.moquette.broker.Session.SessionStatus;
 import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
 import io.moquette.broker.subscriptions.Subscription;
 import io.moquette.broker.subscriptions.Topic;
+import io.moquette.interception.BrokerInterceptor;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
@@ -125,15 +126,17 @@ public class SessionRegistry {
 
     private final ISubscriptionsDirectory subscriptionsDirectory;
     private final IQueueRepository queueRepository;
+    private BrokerInterceptor interceptor;
     private final Authorizator authorizator;
 
     private final TemporalAmount defaultTimeout;
 
     SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory,
-                    IQueueRepository queueRepository,
+                    IQueueRepository queueRepository, BrokerInterceptor interceptor,
                     Authorizator authorizator, long sessionTimeoutSeconds) {
         this.subscriptionsDirectory = subscriptionsDirectory;
         this.queueRepository = queueRepository;
+        this.interceptor = interceptor;
         this.authorizator = authorizator;
         this.defaultTimeout = Duration.of(sessionTimeoutSeconds, ChronoUnit.SECONDS);
         recreateSessionPool();
@@ -237,7 +240,10 @@ public class SessionRegistry {
 
     private void unsubscribe(Session session) {
         for (Subscription existingSub : session.getSubscriptions()) {
-            subscriptionsDirectory.removeSubscription(existingSub.getTopicFilter(), session.getClientID());
+            final Topic topic = existingSub.getTopicFilter();
+            final String clientID = session.getClientID();
+            subscriptionsDirectory.removeSubscription(topic, clientID);
+            interceptor.notifyTopicUnsubscribed(topic.toString(), clientID, null);
         }
     }
 
@@ -283,6 +289,7 @@ public class SessionRegistry {
         final Session old = pool.remove(clientID);
         if (old != null) {
             old.cleanUp();
+            unsubscribe(old);
         }
     }
 
@@ -322,7 +329,9 @@ public class SessionRegistry {
 
     void sessionDisconnected(Session session) {
         // Only persistent (non-clean) sessions are added to the queue.
-        if (!session.isClean()) {
+        if (session.isClean()) {
+            unsubscribe(session);
+        } else {
             session.setCleanupTime(Instant.now().plus(defaultTimeout));
             inactiveSessions.add(session);
             LOG.debug("Added session {} with timeout {}s", session.getClientID(), session.getDelay(TimeUnit.SECONDS));

@@ -17,7 +17,8 @@ package io.moquette.persistence;
 
 import io.moquette.broker.ISubscriptionsRepository;
 import io.moquette.broker.subscriptions.Subscription;
-
+import io.moquette.broker.subscriptions.Topic;
+import io.netty.handler.codec.mqtt.MqttQoS;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -38,9 +39,6 @@ public class MemorySubscriptionsRepository implements ISubscriptionsRepository {
 
     @Override
     public void removeSubscription(String topic, String clientID) {
-        subscriptions.stream()
-            .filter(s -> s.getTopicFilter().toString().equals(topic) && s.getClientId().equals(clientID))
-            .findFirst()
-            .ifPresent(subscriptions::remove);
+        subscriptions.remove(new Subscription(clientID, new Topic(topic), MqttQoS.AT_LEAST_ONCE));
     }
 }
