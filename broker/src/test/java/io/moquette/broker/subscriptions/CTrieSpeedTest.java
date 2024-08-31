@@ -79,7 +79,7 @@ public class CTrieSpeedTest {
     }
 
     private static void logResults(Map<Integer, Map<Integer, List<TestResult>>> set) {
-        StringBuilder header = new StringBuilder();
+        StringBuilder header = new StringBuilder(set.values().iterator().next().values().iterator().next().get(0).topicCount+" topics");
         TreeMap<Integer, StringBuilder> rowPerLength = new TreeMap<>();
         for (Map.Entry<Integer, Map<Integer, List<TestResult>>> entry : set.entrySet()) {
             Integer threads = entry.getKey();
@@ -106,7 +106,6 @@ public class CTrieSpeedTest {
         return SubscriptionRequest.buildNonShared(clientID, asTopic(topicName), MqttSubscriptionOption.onlyFromQos(MqttQoS.AT_MOST_ONCE));
     }
 
-    @Disabled
     @Test
     public void testManyClientsFewTopics() throws InterruptedException, Exception {
         LOGGER.info("testManyClientsFewTopics");
@@ -115,7 +114,6 @@ public class CTrieSpeedTest {
         test(subCreate);
     }
 
-    @Disabled
     @Test
     public void testFlat() throws Exception {
         LOGGER.info("TestFlat");
@@ -124,7 +122,6 @@ public class CTrieSpeedTest {
         test(subCreate);
     }
 
-    @Disabled
     @Test
     public void testDeep() throws InterruptedException, Exception {
         LOGGER.info("TestDeep");
@@ -139,7 +136,7 @@ public class CTrieSpeedTest {
                 test(subCreate, threads, length);
                 test(subCreate, threads, length);
                 test(subCreate, threads, length);
-                logResults();
+                //logResults();
             }
         }
         logResults();
@@ -278,8 +275,14 @@ public class CTrieSpeedTest {
 
                     final Subscription subscription = subReq.subscription();
                     final Topic topic = subReq.getTopicFilter();
-                    final List<Subscription> recursiveMatch = tree.recursiveMatch(topic);
-                    final boolean contains = recursiveMatch.contains(subscription);
+                    final SubscriptionCollection recursiveMatch = tree.recursiveMatch(topic);
+                    boolean contains = false;
+                    for (Subscription sub : recursiveMatch) {
+                        if (sub.equals(subscription)) {
+                            contains = true;
+                            break;
+                        }
+                    }
                     Assertions.assertTrue(contains, () -> "Failed to find " + subscription + " on " + topic + " found " + recursiveMatch.size() + " matches.");
 
                     count++;
