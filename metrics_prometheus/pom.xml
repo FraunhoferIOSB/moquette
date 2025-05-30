@@ -4,8 +4,8 @@
     <parent>
         <relativePath>../pom.xml</relativePath>
         <artifactId>moquette-parent</artifactId>
-        <groupId>io.moquette</groupId>
-        <version>0.19-SNAPSHOT</version>
+        <groupId>de.fraunhofer.iosb.io.moquette</groupId>
+        <version>0.18.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>moquette-metrics-prometheus</artifactId>
@@ -25,7 +25,7 @@
             <version>${slf4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.moquette</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>moquette-broker</artifactId>
             <version>${project.version}</version>
         </dependency>
