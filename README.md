@@ -32,7 +32,7 @@ This version of Moquette is available on Maven Central. In dependencies section 
 <dependency>
   <groupId>de.fraunhofer.iosb.io.moquette</groupId>
   <artifactId>moquette-broker</artifactId>
-  <version>0.18.0</version>
+  <version>0.18.1</version>
 </dependency>
 ```
 
