@@ -1,4 +1,7 @@
-Version 0.18.2-SNAPSHOT:
+Version 0.18.2:
+   [fix] Metrics
+   	 - Appended _total to names of counters.
+   	 - Changed queue fill levels to be relative (0-1) instead of absolute.
 
 Version 0.18.1:
    [feature] Added metrics framework and Prometheus implementation.
