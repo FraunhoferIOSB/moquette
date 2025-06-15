@@ -19,7 +19,7 @@
     <artifactId>moquette-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>0.18.2</version>
+    <version>0.18.3-SNAPSHOT</version>
     <name>Moquette MQTT + patches</name>
     <description>Moquette lightweight MQTT Broker, with added patches.</description>
     <inceptionYear>2011</inceptionYear>
@@ -61,7 +61,7 @@
         <connection>scm:git:git@github.com:FraunhoferIOSB/moquette.git</connection>
         <developerConnection>scm:git:git@github.com:FraunhoferIOSB/moquette.git</developerConnection>
         <url>git@github.com:FraunhoferIOSB/moquette.git</url>
-        <tag>v0.18.2</tag>
+        <tag>v0.18.x</tag>
   </scm>
 
     <modules>
