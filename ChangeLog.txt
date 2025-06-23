@@ -1,4 +1,4 @@
-Version 0.18.3-SNAPSHOT:
+Version 0.18.3:
    [fix] Fixed SegmentedQueues not being cleaned up on session purge. (#833)
 
 Version 0.18.2:
