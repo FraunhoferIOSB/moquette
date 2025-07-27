@@ -77,6 +77,11 @@ public class BrokerInterceptorTest {
         }
 
         @Override
+        public void onPreSubscribe(Subscription subscription, String username) {
+            n.set(65);
+        }
+
+        @Override
         public void onSubscribe(InterceptSubscribeMessage msg) {
             n.set(70);
         }

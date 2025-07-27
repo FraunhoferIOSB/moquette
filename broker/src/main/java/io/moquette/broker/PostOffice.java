@@ -85,10 +85,15 @@ class PostOffice {
                 this.clientId = clientId;
                 this.idPacket = idPacket;
             }
+
             @Override
             public boolean equals(Object o) {
-                if (this == o) return true;
-                if (o == null || getClass() != o.getClass()) return false;
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
                 PacketId packetId = (PacketId) o;
                 return idPacket == packetId.idPacket && Objects.equals(clientId, packetId.clientId);
             }
@@ -114,13 +119,13 @@ class PostOffice {
         public void remove(String clientId, int messageID, String targetClientId) {
             final PacketId packetId = new PacketId(clientId, messageID);
             packetsMap.computeIfPresent(packetId, (key, clientsSet) -> {
-               clientsSet.remove(targetClientId);
-               if (clientsSet.isEmpty()) {
-                   // the mapping key, value is removed
-                   return null;
-               } else {
-                   return clientsSet;
-               }
+                clientsSet.remove(targetClientId);
+                if (clientsSet.isEmpty()) {
+                    // the mapping key, value is removed
+                    return null;
+                } else {
+                    return clientsSet;
+                }
             });
         }
 
@@ -151,11 +156,14 @@ class PostOffice {
     }
 
     static class RouteResult {
+
         private final String clientId;
         private final Status status;
         private CompletableFuture queuedFuture;
 
-        enum Status {SUCCESS, FAIL}
+        enum Status {
+            SUCCESS, FAIL
+        }
 
         public static RouteResult success(String clientId, CompletableFuture queuedFuture) {
             return new RouteResult(clientId, Status.SUCCESS, queuedFuture);
@@ -166,7 +174,7 @@ class PostOffice {
         }
 
         public static RouteResult failed(String clientId, String error) {
-           final CompletableFuture<Void> failed = new CompletableFuture<>();
+            final CompletableFuture<Void> failed = new CompletableFuture<>();
             failed.completeExceptionally(new Error(error));
             return new RouteResult(clientId, Status.FAIL, failed);
         }
@@ -285,7 +293,7 @@ class PostOffice {
     }
 
     public void fireWill(Session bindedSession) {
-        final ISessionsRepository.Will will =  bindedSession.getWill();
+        final ISessionsRepository.Will will = bindedSession.getWill();
         final String clientId = bindedSession.getClientID();
 
         if (will.delayInterval == 0) {
@@ -440,6 +448,10 @@ class PostOffice {
                 }
             }).collect(Collectors.toList());
 
+        for (Subscription subscription : newSubscriptions) {
+            interceptor.notifyPreTopicSubscribed(subscription, username);
+        }
+
         final Set<Subscription> subscriptionToSendRetained = newSubscriptions.stream()
             .map(this::addSubscriptionReportingNewStatus) // mutating operation of SubscriptionDirectory
             .filter(PostOffice::needToReceiveRetained)
@@ -447,6 +459,7 @@ class PostOffice {
             .collect(Collectors.toSet());
 
         for (SharedSubscriptionData sharedSubData : sharedSubscriptions) {
+            
             if (subscriptionIdOpt.isPresent()) {
                 subscriptions.addShared(clientID, sharedSubData.name, sharedSubData.topicFilter, sharedSubData.option,
                     subscriptionIdOpt.get());
@@ -470,7 +483,7 @@ class PostOffice {
     }
 
     private static boolean needToReceiveRetained(Utils.Couple<Boolean, Subscription> addedAndSub) {
-        MqttSubscriptionOption subOptions = addedAndSub.v2.option();
+        MqttSubscriptionOption subOptions = addedAndSub.v2.getOption();
         switch (subOptions.retainHandling()) {
             case SEND_AT_SUBSCRIBE:
                 return true;
@@ -487,10 +500,10 @@ class PostOffice {
         final boolean newlyAdded;
         if (subscription.hasSubscriptionIdentifier()) {
             SubscriptionIdentifier subscriptionId = subscription.getSubscriptionIdentifier();
-            newlyAdded = subscriptions.add(subscription.getClientId(), subscription.getTopicFilter(),
-                subscription.option(), subscriptionId);
+            newlyAdded = subscriptions.add(subscription.getClientId(), subscription.getTopicFilterClient(),
+                subscription.getOption(), subscriptionId);
         } else {
-            newlyAdded = subscriptions.add(subscription.getClientId(), subscription.getTopicFilter(), subscription.option());
+            newlyAdded = subscriptions.add(subscription.getClientId(), subscription.getTopicFilterClient(), subscription.getOption());
         }
         return new Utils.Couple<>(newlyAdded, subscription);
     }
@@ -519,8 +532,8 @@ class PostOffice {
     }
 
     private static Optional<SubscriptionIdentifier> verifyAndExtractMessageIdentifier(MqttSubscribeMessage msg) {
-        final List<MqttProperties.MqttProperty<Integer>> subscriptionIdentifierProperties =
-            (List<MqttProperties.MqttProperty<Integer>>) msg.idAndPropertiesVariableHeader().properties()
+        final List<MqttProperties.MqttProperty<Integer>> subscriptionIdentifierProperties
+            = (List<MqttProperties.MqttProperty<Integer>>) msg.idAndPropertiesVariableHeader().properties()
                 .getProperties(MqttPropertyType.SUBSCRIPTION_IDENTIFIER.value());
         if (subscriptionIdentifierProperties.size() > 1) {
             // more than 1 SUBSCRIPTION_IDENTIFIER property during subscribe is a protocol error
@@ -542,7 +555,7 @@ class PostOffice {
     private void publishRetainedMessagesForSubscriptions(String clientID, Collection<Subscription> newSubscriptions) {
         Session targetSession = this.sessionRegistry.retrieve(clientID);
         for (Subscription subscription : newSubscriptions) {
-            final String topicFilter = subscription.getTopicFilter().toString();
+            final String topicFilter = subscription.getTopicFilterClient().toString();
             final Collection<RetainedMessage> retainedMsgs = retainedRepository.retainedOnTopic(topicFilter);
 
             if (retainedMsgs.isEmpty()) {
@@ -641,14 +654,14 @@ class PostOffice {
         final Topic topic = new Topic(msg.variableHeader().topicName());
         if (!authorizator.canWrite(topic, username, clientID)) {
             LOG.error("client is not authorized to publish on topic: {}", topic);
-            Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, auth failed");
+            Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, auth failed");
             return CompletableFuture.completedFuture(null);
         }
 
         if (isPayloadFormatToValidate(msg)) {
             if (!validatePayloadAsUTF8(msg)) {
                 LOG.warn("Received not valid UTF-8 payload when payload format indicator was enabled (QoS0)");
-                Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, invalid format");
+                Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, invalid format");
                 connection.brokerDisconnect(MqttReasonCodes.Disconnect.PAYLOAD_FORMAT_INVALID);
                 connection.disconnectSession();
                 connection.dropConnection();
@@ -659,7 +672,7 @@ class PostOffice {
         final RoutingResults publishResult = publish2Subscribers(clientID, messageExpiry, msg);
         if (publishResult.isAllFailed()) {
             LOG.info("No one publish was successfully enqueued to session loops");
-            Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, can't forward to next session loop");
+            Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, can't forward to next session loop");
             return CompletableFuture.completedFuture(null);
         }
 
@@ -670,7 +683,7 @@ class PostOffice {
             }
 
             interceptor.notifyTopicPublished(msg, clientID, username);
-            Utils.release(msg,PostOffice.BT_PUB_IN + " - ok");
+            Utils.release(msg, PostOffice.BT_PUB_IN + " - ok");
         });
     }
 
@@ -682,13 +695,13 @@ class PostOffice {
         if (!topic.isValid()) {
             LOG.warn("Invalid topic format, force close the connection");
             connection.dropConnection();
-            Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, qos1 invalid topic");
+            Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, qos1 invalid topic");
             return RoutingResults.preroutingError();
         }
         final String clientId = connection.getClientId();
         if (!authorizator.canWrite(topic, username, clientId)) {
             LOG.error("MQTT client: {} is not authorized to publish on topic: {}", clientId, topic);
-            Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, qos1 auth failed");
+            Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, qos1 auth failed");
             return RoutingResults.preroutingError();
         }
 
@@ -697,7 +710,7 @@ class PostOffice {
                 LOG.warn("Received not valid UTF-8 payload when payload format indicator was enabled (QoS1)");
                 connection.sendPubAck(messageID, MqttReasonCodes.PubAck.PAYLOAD_FORMAT_INVALID);
 
-                Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, qos1 invalid format");
+                Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, qos1 invalid format");
                 return RoutingResults.preroutingError();
             }
         }
@@ -705,7 +718,7 @@ class PostOffice {
         if (isContentTypeToValidate(msg)) {
             if (!validateContentTypeAsUTF8(msg)) {
                 LOG.warn("Received not valid UTF-8 content type (QoS1)");
-                Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, qos1 invalid content type");
+                Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, qos1 invalid content type");
                 connection.brokerDisconnect(MqttReasonCodes.Disconnect.PROTOCOL_ERROR);
                 connection.disconnectSession();
                 connection.dropConnection();
@@ -733,7 +746,7 @@ class PostOffice {
             // some session event loop enqueue raised a problem
             failedPublishes.insertAll(messageID, clientId, routes.failedRoutings);
         }
-        Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, qos1");
+        Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, qos1");
 
         // cleanup success resends from the failed publishes cache
         failedPublishes.removeAll(messageID, clientId, routes.successedRoutings);
@@ -794,6 +807,7 @@ class PostOffice {
     }
 
     private class BatchingPublishesCollector {
+
         final List<Subscription>[] subscriptions;
         private final int eventLoops;
         private final SessionEventLoopGroup loopGroup;
@@ -850,7 +864,7 @@ class PostOffice {
                 if (subscriptionsBatch == null) {
                     continue;
                 }
-                count ++;
+                count++;
             }
             return count;
         }
@@ -874,7 +888,7 @@ class PostOffice {
 
         for (final Subscription sub : topicMatchingSubscriptions) {
             if (filterTargetClients == NO_FILTER || filterTargetClients.contains(sub.getClientId())) {
-                if (sub.option().isNoLocal()) {
+                if (sub.getOption().isNoLocal()) {
                     if (publisherClientId.equals(sub.getClientId())) {
                         // if noLocal do not publish to the publisher
                         continue;
@@ -931,7 +945,7 @@ class PostOffice {
         for (Subscription sub : subscriptions) {
             MqttQoS qos = lowerQosToTheSubscriptionDesired(sub, publishingQos);
             boolean retained = false;
-            if (sub.option().isRetainAsPublished()) {
+            if (sub.getOption().isRetainAsPublished()) {
                 retained = retainPublish;
             }
             publishToSession(duplicatedPayload, topic, sub, qos, retained, messageExpiry, msg);
@@ -945,24 +959,25 @@ class PostOffice {
         boolean isSessionPresent = targetSession != null;
         if (isSessionPresent) {
             LOG.debug("Sending PUBLISH message to active subscriber CId: {}, topicFilter: {}, qos: {}",
-                      sub.getClientId(), sub.getTopicFilter(), qos);
+                sub.getClientId(), sub.getTopicFilterClient(), qos);
 
             MetricsManager.getMetricsProvider().addMessage(SessionEventLoop.getThreadQueueId(), qos.value());
             Collection<? extends MqttProperties.MqttProperty> existingProperties = msg.variableHeader().properties().listAll();
             final MqttProperties.MqttProperty[] properties = prepareSubscriptionProperties(sub, existingProperties);
-            final SessionRegistry.PublishedMessage publishedMessage =
-                new SessionRegistry.PublishedMessage(topic, qos, payload, retained, messageExpiry, properties);
+            // TODO: Use client-topic here.
+            final SessionRegistry.PublishedMessage publishedMessage
+                = new SessionRegistry.PublishedMessage(topic, qos, payload, retained, messageExpiry, properties);
             targetSession.sendPublishOnSessionAtQos(publishedMessage);
         } else {
             // If we are, the subscriber disconnected after the subscriptions tree selected that session as a
             // destination.
             LOG.debug("PUBLISH to not yet present session. CId: {}, topicFilter: {}, qos: {}", sub.getClientId(),
-                      sub.getTopicFilter(), qos);
+                sub.getTopicFilterClient(), qos);
         }
     }
 
     private MqttProperties.MqttProperty[] prepareSubscriptionProperties(Subscription sub,
-                                        Collection<? extends MqttProperties.MqttProperty> existingProperties) {
+                                                                        Collection<? extends MqttProperties.MqttProperty> existingProperties) {
 
         // copy all properties except SubscriptionId
         Collection<MqttProperties.MqttProperty> properties = new ArrayList<>(existingProperties.size() + 1);
@@ -998,7 +1013,7 @@ class PostOffice {
         final String clientId = connection.getClientId();
         if (!authorizator.canWrite(topic, username, clientId)) {
             LOG.error("MQTT client is not authorized to publish on topic: {}", topic);
-            Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, phase 2 qos2 auth failed");
+            Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, phase 2 qos2 auth failed");
             // WARN this is a special case failed is empty, but this result is to be considered as error.
             return RoutingResults.preroutingError();
         }
@@ -1009,7 +1024,7 @@ class PostOffice {
                 LOG.warn("Received not valid UTF-8 payload when payload format indicator was enabled (QoS2)");
                 connection.sendPubRec(messageID, MqttReasonCodes.PubRec.PAYLOAD_FORMAT_INVALID);
 
-                Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, phase 2 qos2 invalid format");
+                Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, phase 2 qos2 invalid format");
                 return RoutingResults.preroutingError();
             }
         }
@@ -1030,7 +1045,7 @@ class PostOffice {
             // some session event loop enqueue raised a problem
             failedPublishes.insertAll(messageID, clientId, publishRoutings.failedRoutings);
         }
-        Utils.release(msg,PostOffice.BT_PUB_IN + " - ok, phase 2 qos2");
+        Utils.release(msg, PostOffice.BT_PUB_IN + " - ok, phase 2 qos2");
 
         // cleanup success resends from the failed publishes cache
         failedPublishes.removeAll(messageID, clientId, publishRoutings.successedRoutings);
@@ -1039,8 +1054,8 @@ class PostOffice {
     }
 
     static MqttQoS lowerQosToTheSubscriptionDesired(Subscription sub, MqttQoS qos) {
-        if (qos.value() > sub.option().qos().value()) {
-            qos = sub.option().qos();
+        if (qos.value() > sub.getOption().qos().value()) {
+            qos = sub.getOption().qos();
         }
         return qos;
     }
@@ -1124,11 +1139,11 @@ class PostOffice {
         interceptor.notifyClientConnected(msg);
     }
 
-    void dispatchDisconnection(String clientId,String userName) {
+    void dispatchDisconnection(String clientId, String userName) {
         interceptor.notifyClientDisconnected(clientId, userName);
     }
 
-    void dispatchConnectionLost(String clientId,String userName) {
+    void dispatchConnectionLost(String clientId, String userName) {
         interceptor.notifyClientConnectionLost(clientId, userName);
     }
 

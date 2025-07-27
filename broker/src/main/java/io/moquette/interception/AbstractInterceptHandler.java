@@ -17,6 +17,7 @@
 package io.moquette.interception;
 
 import io.moquette.broker.Utils;
+import io.moquette.broker.subscriptions.Subscription;
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
 import io.moquette.interception.messages.InterceptConnectMessage;
 import io.moquette.interception.messages.InterceptConnectionLostMessage;
@@ -50,6 +51,10 @@ public abstract class AbstractInterceptHandler implements InterceptHandler {
     @Override
     public void onPublish(InterceptPublishMessage msg) {
         Utils.release(msg.getPayload(), "interceptor notification");
+    }
+
+    @Override
+    public void onPreSubscribe(Subscription subscription, String username) {
     }
 
     @Override

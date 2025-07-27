@@ -13,7 +13,6 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-
 package io.moquette.interception;
 
 import io.moquette.interception.messages.*;
@@ -33,8 +32,8 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 public interface InterceptHandler {
 
     Class<?>[] ALL_MESSAGE_TYPES = {InterceptConnectMessage.class, InterceptDisconnectMessage.class,
-            InterceptConnectionLostMessage.class, InterceptPublishMessage.class, InterceptSubscribeMessage.class,
-            InterceptUnsubscribeMessage.class, InterceptAcknowledgedMessage.class, InterceptExceptionMessage.class};
+        InterceptConnectionLostMessage.class, InterceptPublishMessage.class, InterceptSubscribeMessage.class,
+        InterceptUnsubscribeMessage.class, InterceptAcknowledgedMessage.class, InterceptExceptionMessage.class};
 
     /**
      * @return the identifier of this intercept handler.
@@ -60,6 +59,8 @@ public interface InterceptHandler {
      * @param msg The message that was published.
      */
     void onPublish(InterceptPublishMessage msg);
+
+    void onPreSubscribe(Subscription subscription, String username);
 
     void onSubscribe(InterceptSubscribeMessage msg);
 

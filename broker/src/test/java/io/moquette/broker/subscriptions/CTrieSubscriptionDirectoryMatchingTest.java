@@ -191,11 +191,11 @@ public class CTrieSubscriptionDirectoryMatchingTest extends CTrieSubscriptionDir
     public void testOverlappingSubscriptions() {
         Subscription genericSub = new Subscription("Sensor1", asTopic("a/+"), MqttSubscriptionOption.onlyFromQos(MqttQoS.AT_MOST_ONCE));
         this.sessionsRepository.addNewSubscription(genericSub);
-        sut.add(genericSub.clientId, genericSub.topicFilter, genericSub.option());
+        sut.add(genericSub.clientId, genericSub.topicFilterClient, genericSub.getOption());
 
         Subscription specificSub = new Subscription("Sensor1", asTopic("a/b"), MqttSubscriptionOption.onlyFromQos(MqttQoS.AT_MOST_ONCE));
         this.sessionsRepository.addNewSubscription(specificSub);
-        sut.add(specificSub.clientId, specificSub.topicFilter, specificSub.option());
+        sut.add(specificSub.clientId, specificSub.topicFilterClient, specificSub.getOption());
 
         //Exercise
         final List<Subscription> matchingForSpecific = sut.matchQosSharpening(asTopic("a/b"));
@@ -255,10 +255,10 @@ public class CTrieSubscriptionDirectoryMatchingTest extends CTrieSubscriptionDir
         assertTrue(matchingClient1Sub.isPresent());
         Subscription client1Sub = matchingClient1Sub.get();
 
-        assertThat(client1SubQoS0.option().qos()).isNotEqualTo(client1Sub.option().qos());
+        assertThat(client1SubQoS0.getOption().qos()).isNotEqualTo(client1Sub.getOption().qos());
 
         // client1SubQoS2 should override client1SubQoS0
-        assertThat(client1Sub.option().qos()).isEqualTo(client1SubQoS2.option().qos());
+        assertThat(client1Sub.getOption().qos()).isEqualTo(client1SubQoS2.getOption().qos());
     }
 
     @Test

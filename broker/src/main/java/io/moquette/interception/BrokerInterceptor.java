@@ -145,8 +145,17 @@ public final class BrokerInterceptor implements Interceptor {
     public void notifyTopicSubscribed(final Subscription sub, final String username) {
         for (final InterceptHandler handler : this.handlers.get(InterceptSubscribeMessage.class)) {
             LOG.debug("Notifying MQTT SUBSCRIBE message to interceptor. CId={}, topicFilter={}, interceptorId={}",
-                sub.getClientId(), sub.getTopicFilter(), handler.getID());
+                sub.getClientId(), sub.getTopicFilterClient(), handler.getID());
             executor.execute(() -> handler.onSubscribe(new InterceptSubscribeMessage(sub, username)));
+        }
+    }
+
+    @Override
+    public void notifyPreTopicSubscribed(final Subscription sub, final String username) {
+        for (final InterceptHandler handler : this.handlers.get(InterceptSubscribeMessage.class)) {
+            LOG.debug("Notifying MQTT PRE SUBSCRIBE message to interceptor. CId={}, topicFilter={}, interceptorId={}",
+                sub.getClientId(), sub.getTopicFilterClient(), handler.getID());
+            executor.execute(() -> handler.onPreSubscribe(sub, username));
         }
     }
 

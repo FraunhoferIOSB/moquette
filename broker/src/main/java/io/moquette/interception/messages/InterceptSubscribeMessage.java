@@ -35,15 +35,15 @@ public class InterceptSubscribeMessage implements InterceptMessage {
     }
 
     public MqttQoS getRequestedQos() {
-        return subscription.option().qos();
+        return subscription.getOption().qos();
     }
 
     public MqttSubscriptionOption getOption() {
-        return subscription.option();
+        return subscription.getOption();
     }
 
     public String getTopicFilter() {
-        return subscription.getTopicFilter().toString();
+        return subscription.getTopicFilterClient().toString();
     }
 
     public String getUsername() {

@@ -31,13 +31,9 @@ public interface ISubscriptionsDirectory {
 
     List<Subscription> matchQosSharpening(Topic topic);
 
-    boolean add(String clientId, Topic filter, MqttSubscriptionOption option);
+    boolean add(Subscription subscription);
 
-    boolean add(String clientId, Topic filter, MqttSubscriptionOption option, SubscriptionIdentifier subscriptionId);
-
-    void addShared(String clientId, ShareName name, Topic topicFilter, MqttSubscriptionOption option);
-
-    void addShared(String clientId, ShareName name, Topic topicFilter, MqttSubscriptionOption option, SubscriptionIdentifier subscriptionId);
+    void addShared(Subscription subscription);
 
     void removeSubscription(Topic topic, String clientID);
 

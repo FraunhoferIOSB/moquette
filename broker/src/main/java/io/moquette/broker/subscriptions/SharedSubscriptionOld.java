@@ -24,14 +24,14 @@ import java.util.Optional;
 /**
  * Shared subscription data class.
  * */
-public final class SharedSubscription implements Comparable<SharedSubscription> {
+public final class SharedSubscriptionOld implements Comparable<SharedSubscriptionOld> {
     private final ShareName shareName;
     private final Topic topicFilter;
     private final String clientId;
     private final MqttSubscriptionOption option;
     private final Optional<SubscriptionIdentifier> subscriptionId;
 
-    public SharedSubscription(ShareName shareName, Topic topicFilter, String clientId, MqttSubscriptionOption option) {
+    public SharedSubscriptionOld(ShareName shareName, Topic topicFilter, String clientId, MqttSubscriptionOption option) {
         Objects.requireNonNull(option, "option parameter can't be null");
         this.shareName = shareName;
         this.topicFilter = topicFilter;
@@ -40,7 +40,7 @@ public final class SharedSubscription implements Comparable<SharedSubscription> 
         this.subscriptionId = Optional.empty();
     }
 
-    public SharedSubscription(ShareName shareName, Topic topicFilter, String clientId,
+    public SharedSubscriptionOld(ShareName shareName, Topic topicFilter, String clientId,
                               MqttSubscriptionOption option, SubscriptionIdentifier subscriptionId) {
         Objects.requireNonNull(option, "option parameter can't be null");
         this.shareName = shareName;
@@ -75,9 +75,9 @@ public final class SharedSubscription implements Comparable<SharedSubscription> 
      * */
     Subscription createSubscription() {
         if (subscriptionId.isPresent()) {
-            return new Subscription(clientId, topicFilter, option, shareName.getShareName(), subscriptionId.get());
+            return new Subscription(clientId, topicFilter, option, shareName, subscriptionId.get());
         } else {
-            return new Subscription(clientId, topicFilter, option, shareName.getShareName());
+            return new Subscription(clientId, topicFilter, option, shareName);
         }
     }
 
@@ -90,7 +90,7 @@ public final class SharedSubscription implements Comparable<SharedSubscription> 
     }
 
     @Override
-    public int compareTo(SharedSubscription o) {
+    public int compareTo(SharedSubscriptionOld o) {
         return this.clientId.compareTo(o.clientId);
     }
 
@@ -98,7 +98,7 @@ public final class SharedSubscription implements Comparable<SharedSubscription> 
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SharedSubscription that = (SharedSubscription) o;
+        SharedSubscriptionOld that = (SharedSubscriptionOld) o;
         return Objects.equals(shareName, that.shareName) &&
             Objects.equals(topicFilter, that.topicFilter) &&
             Objects.equals(clientId, that.clientId) &&

@@ -13,7 +13,6 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-
 package io.moquette.interception;
 
 import io.moquette.interception.messages.InterceptAcknowledgedMessage;
@@ -41,6 +40,8 @@ public interface Interceptor {
     void notifyClientConnectionLost(String clientID, String username);
 
     void notifyTopicPublished(MqttPublishMessage msg, String clientID, String username);
+
+    void notifyPreTopicSubscribed(Subscription sub, String username);
 
     void notifyTopicSubscribed(Subscription sub, String username);
 
