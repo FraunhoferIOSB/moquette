@@ -1,4 +1,5 @@
 Version 0.18.4-SNAPSHOT:
+   [Cleanup] Cleaned up subscription handling.
 
 Version 0.18.3:
    [fix] Fixed SegmentedQueues not being cleaned up on session purge. (#833)
