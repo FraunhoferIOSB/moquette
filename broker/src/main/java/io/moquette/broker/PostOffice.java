@@ -391,11 +391,21 @@ class PostOffice {
         int messageID = messageId(msg);
         final Session session = sessionRegistry.retrieve(clientID);
 
+        List<MqttTopicSubscription> ackTopics;
+        if (mqttConnection.isProtocolVersion5()) {
+            ackTopics = authorizator.verifyAlsoSharedTopicsReadAccess(clientID, username, msg);
+        } else {
+            ackTopics = authorizator.verifyTopicsReadAccess(clientID, username, msg);
+        }
+        ackTopics = updateWithMaximumSupportedQoS(ackTopics);
+        MqttSubAckMessage ackMessage = doAckMessageFromValidateFilters(ackTopics, messageID);
+
         final List<SharedSubscriptionData> sharedSubscriptions;
         final Optional<SubscriptionIdentifier> subscriptionIdOpt;
 
         if (mqttConnection.isProtocolVersion5()) {
-            sharedSubscriptions = msg.payload().topicSubscriptions().stream()
+            sharedSubscriptions = ackTopics.stream()
+                .filter(sub -> sub.qualityOfService() != FAILURE)
                 .filter(sub -> SharedSubscriptionUtils.isSharedSubscription(sub.topicName()))
                 .map(SharedSubscriptionData::fromMqttSubscription)
                 .collect(Collectors.toList());
@@ -420,15 +430,6 @@ class PostOffice {
             sharedSubscriptions = Collections.emptyList();
             subscriptionIdOpt = Optional.empty();
         }
-
-        List<MqttTopicSubscription> ackTopics;
-        if (mqttConnection.isProtocolVersion5()) {
-            ackTopics = authorizator.verifyAlsoSharedTopicsReadAccess(clientID, username, msg);
-        } else {
-            ackTopics = authorizator.verifyTopicsReadAccess(clientID, username, msg);
-        }
-        ackTopics = updateWithMaximumSupportedQoS(ackTopics);
-        MqttSubAckMessage ackMessage = doAckMessageFromValidateFilters(ackTopics, messageID);
 
         // store topics of non-shared subscriptions in session
         List<Subscription> newSubscriptions = ackTopics.stream()
