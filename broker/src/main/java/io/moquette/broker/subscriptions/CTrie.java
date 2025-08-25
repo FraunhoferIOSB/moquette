@@ -171,7 +171,7 @@ public class CTrie {
     public boolean addToTree(Subscription request) {
         Action res;
         do {
-            res = insert(request.getTopicFilter(), this.root, request);
+            res = insert(request.getTopicFilterInternal(), this.root, request);
         } while (res == Action.REPEAT);
         return res == Action.OK_NEW;
     }

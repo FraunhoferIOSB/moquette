@@ -347,10 +347,10 @@ public class SessionRegistry {
     private void reactivateSubscriptions(Session session, String username) {
         //verify if subscription still satisfy read ACL permissions
         for (Subscription existingSub : session.getSubscriptions()) {
-            final boolean topicReadable = authorizator.canRead(existingSub.getTopicFilter(), username,
+            final boolean topicReadable = authorizator.canRead(existingSub.getTopicFilterInternal(), username,
                 session.getClientID());
             if (!topicReadable) {
-                subscriptionsDirectory.removeSubscription(existingSub.getTopicFilter(), session.getClientID());
+                subscriptionsDirectory.removeSubscription(existingSub.getTopicFilterInternal(), session.getClientID());
             }
             // TODO
 //            subscriptionsDirectory.reactivate(existingSub.getTopicFilter(), session.getClientID());
@@ -359,7 +359,7 @@ public class SessionRegistry {
 
     private void unsubscribe(Session session) {
         for (Subscription existingSub : session.getSubscriptions()) {
-            subscriptionsDirectory.removeSubscription(existingSub.getTopicFilter(), session.getClientID());
+            subscriptionsDirectory.removeSubscription(existingSub.getTopicFilterInternal(), session.getClientID());
         }
     }
 
