@@ -68,7 +68,7 @@ public class H2SubscriptionsRepository implements ISubscriptionsRepository {
 
     @Override
     public void addNewSubscription(Subscription subscription) {
-        subscriptions.put(subscription.getTopicFilter() + "-" + subscription.getClientId(), subscription);
+        subscriptions.put(subscription.getTopicFilterInternal() + "-" + subscription.getClientId(), subscription);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class H2SubscriptionsRepository implements ISubscriptionsRepository {
         } else {
             qosPart = new SubscriptionOptionAndId(sub.getOption());
         }
-        storeNewSharedSubscription(sub.getClientId(), sub.getShareName(), sub.getTopicFilter(), qosPart);
+        storeNewSharedSubscription(sub.getClientId(), sub.getShareName(), sub.getTopicFilterInternal(), qosPart);
     }
 
     private void storeNewSharedSubscription(String clientId, ShareName share, Topic topicFilter, SubscriptionOptionAndId value) {
@@ -297,7 +297,7 @@ public class H2SubscriptionsRepository implements ISubscriptionsRepository {
         @Override
         public int getMemory(Subscription sub) {
             return StringDataType.INSTANCE.getMemory(sub.getClientId()) +
-                StringDataType.INSTANCE.getMemory(sub.getTopicFilter().toString()) +
+                StringDataType.INSTANCE.getMemory(sub.getTopicFilterInternal().toString()) +
                 SubscriptionOptionValueType.INSTANCE.getMemory(sub.getOption()) +
                 1 + // flag to say if share name is present and/or subscription identifier
                 (sub.hasShareName() ? StringDataType.INSTANCE.getMemory(sub.getShareName().getShareName()) : 0) +
@@ -307,7 +307,7 @@ public class H2SubscriptionsRepository implements ISubscriptionsRepository {
         @Override
         public void write(WriteBuffer buff, Subscription sub) {
             StringDataType.INSTANCE.write(buff, sub.getClientId());
-            StringDataType.INSTANCE.write(buff, sub.getTopicFilter().toString());
+            StringDataType.INSTANCE.write(buff, sub.getTopicFilterInternal().toString());
             SubscriptionOptionValueType.INSTANCE.write(buff, sub.getOption());
             final byte flag = (byte) ((sub.hasShareName() ? 0x1 : 0x0) |
                               (sub.hasSubscriptionIdentifier() ? 0x2 : 0x0));

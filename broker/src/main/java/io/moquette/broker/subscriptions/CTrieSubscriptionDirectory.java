@@ -17,6 +17,7 @@ package io.moquette.broker.subscriptions;
 
 import io.moquette.broker.ISubscriptionsRepository;
 import io.moquette.broker.subscriptions.CTrie.UnsubscribeRequest;
+import io.moquette.interception.BrokerInterceptor;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.netty.handler.codec.mqtt.MqttSubscriptionOption;
 import org.slf4j.Logger;
@@ -173,7 +174,7 @@ public class CTrieSubscriptionDirectory implements ISubscriptionsDirectory {
         if (sessionSharedSubscriptions != null) {
             // remove the client from all shared subscriptions
             for (Subscription subscription : sessionSharedSubscriptions) {
-                UnsubscribeRequest request = UnsubscribeRequest.buildShared(subscription.getShareName(), subscription.getTopicFilter(), clientId);
+                UnsubscribeRequest request = UnsubscribeRequest.buildShared(subscription.getShareName(), subscription.getTopicFilterInternal(), clientId);
                 ctrie.removeFromTree(request);
             }
         }

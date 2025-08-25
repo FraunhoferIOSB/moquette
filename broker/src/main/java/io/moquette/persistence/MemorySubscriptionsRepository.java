@@ -51,7 +51,7 @@ public class MemorySubscriptionsRepository implements ISubscriptionsRepository {
     @Override
     public void removeSubscription(String topic, String clientID) {
         subscriptions.stream()
-            .filter(s -> s.getTopicFilter().toString().equals(topic) && s.getClientId().equals(clientID))
+            .filter(s -> s.getTopicFilterInternal().toString().equals(topic) && s.getClientId().equals(clientID))
             .findFirst()
             .ifPresent(subscriptions::remove);
     }
@@ -82,7 +82,7 @@ public class MemorySubscriptionsRepository implements ISubscriptionsRepository {
 
     private void storeNewSharedSubscription(Subscription sharedSub) {
         Map<Utils.Couple<ShareName, Topic>, Subscription> subsMap = sharedSubscriptions.computeIfAbsent(sharedSub.getClientId(), unused -> new HashMap<>());
-        subsMap.put(Utils.Couple.of(sharedSub.getShareName(), sharedSub.getTopicFilter()), sharedSub);
+        subsMap.put(Utils.Couple.of(sharedSub.getShareName(), sharedSub.getTopicFilterInternal()), sharedSub);
     }
 
     @Override
