@@ -274,6 +274,10 @@ class PostOffice {
         recreateRetainedExpires(retainedRepository);
     }
 
+    public void setTopicRewriter(TopicRewriter topicRewriter) {
+        this.topicRewriter = topicRewriter;
+    }
+
     private void cleanRetainedExpired(ExpirableTopic expirable) {
         retainedRepository.cleanRetained(expirable.topic);
     }
@@ -401,7 +405,7 @@ class PostOffice {
                         Topic.asTopic(SharedSubscriptionUtils.extractFilterFromShared(s.topicFilter())),
                         s.option(),
                         new ShareName(SharedSubscriptionUtils.extractShareName(s.topicFilter())), subscriptionIdOpt);
-                    topicRewriter.rewriteTopic(subscription);
+                    subscription.setTopicFilterInternal(topicRewriter.rewriteTopic(subscription));
                     return subscription;
                 })
                 .collect(Collectors.toList());
