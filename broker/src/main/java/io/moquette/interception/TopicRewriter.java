@@ -42,5 +42,5 @@ public interface TopicRewriter {
      * @param publishedTopic The topic that received a publish.
      * @return The topic that the client would expect the publish to be on.
      */
-    public Topic inverseRewrite(Topic clientTopic, Topic publishedTopic);
+    public Topic rewriteTopicInverse(Topic clientTopic, Topic publishedTopic);
 }

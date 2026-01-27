@@ -42,7 +42,11 @@ public class InterceptSubscribeMessage implements InterceptMessage {
         return subscription.getOption();
     }
 
-    public String getTopicFilter() {
+    public String getTopicFilterClient() {
+        return subscription.getTopicFilterClient().toString();
+    }
+
+    public String getTopicFilterInternal() {
         return subscription.getTopicFilterInternal().toString();
     }
 

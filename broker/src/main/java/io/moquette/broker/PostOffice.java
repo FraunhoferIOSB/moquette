@@ -935,7 +935,7 @@ class PostOffice {
             if (sub.getTopicFilterClient().hasWildcard() && sub.isTopicRewritten()) {
                 // Topic contains a wildcard AND is rewritten. The interceptor that did the rewriting
                 // must tell us what topic the client expects.
-                topic = topicRewriter.inverseRewrite(sub.getTopicFilterClient(), topic);
+                topic = topicRewriter.rewriteTopicInverse(sub.getTopicFilterClient(), topic);
             } else {
                 // Non-Wildcard or non-rewritten topic, we can use the client version.
                 topic = sub.getTopicFilterClient();

@@ -29,7 +29,7 @@ public class TopicRewriterUnity implements TopicRewriter {
     }
 
     @Override
-    public Topic inverseRewrite(Topic clientTopic, Topic publishTopic) {
+    public Topic rewriteTopicInverse(Topic clientTopic, Topic publishTopic) {
         return publishTopic;
     }
 
