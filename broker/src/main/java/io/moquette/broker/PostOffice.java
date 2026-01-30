@@ -216,7 +216,7 @@ class PostOffice {
     private final ScheduledExpirationService<ExpirableTopic> retainedMessagesExpirationService;
     private final MqttQoS maxServerGrantedQos;
     private final MetricsProvider metricsProvider;
-    
+
 
     static class ExpirableTopic implements Expirable {
 
@@ -421,6 +421,7 @@ class PostOffice {
             }
             for (Subscription sub : sharedSubscriptions) {
                 subscriptions.addShared(sub);
+                session.addSubscription(sub);
                 interceptor.notifyTopicSubscribed(sub, username);
             }
         } else {
@@ -603,12 +604,15 @@ class PostOffice {
             }
 
             LOG.trace("Removing subscription topic={}", topic);
-            if (SharedSubscriptionUtils.isSharedSubscription(t)) {
-                String topicFilterPart = SharedSubscriptionUtils.extractFilterFromShared(t);
-                ShareName shareName = new ShareName(SharedSubscriptionUtils.extractShareName(t));
-                subscriptions.removeSharedSubscription(shareName, Topic.asTopic(topicFilterPart), clientID);
+            Subscription subscription = session.getSubscription(topic);
+            if (subscription == null) {
+                LOG.debug("Client {} has no subscription on {}", clientID, t);
+                continue;
+            }
+            if (subscription.hasShareName()) {
+                subscriptions.removeSharedSubscription(subscription);
             } else {
-                subscriptions.removeSubscription(topic, clientID);
+                subscriptions.removeSubscription(subscription);
             }
 
             session.removeSubscription(topic);

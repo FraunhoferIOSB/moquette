@@ -39,6 +39,8 @@ import java.util.Properties;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.awaitility.core.ConditionTimeoutException;
+import org.junit.jupiter.api.Assertions;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerIntegrationTopicRewriteTest {
@@ -191,15 +193,11 @@ public class ServerIntegrationTopicRewriteTest {
             subscriberA.disconnect();
         }
         {
-            Awaitility.await().until(cbSubscriberB::isMessageReceived);
-            MqttMessage message = cbSubscriberB.retrieveMessage();
-            assertNull(message, "MUST NOT receive a message");
+            Thread.sleep(Durations.ONE_SECOND);
+            assertFalse(cbSubscriberB.isMessageReceived(), "MUST NOT receive a message");
             subscriberB.disconnect();
-        }
-        {
-            Awaitility.await().until(cbSubscriberC::isMessageReceived);
-            MqttMessage message = cbSubscriberC.retrieveMessage();
-            assertNull(message, "MUST NOT receive a message");
+
+            assertFalse(cbSubscriberC.isMessageReceived(), "MUST NOT receive a message");
             subscriberC.disconnect();
         }
     }

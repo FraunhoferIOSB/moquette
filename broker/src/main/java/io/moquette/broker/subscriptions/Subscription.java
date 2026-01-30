@@ -84,6 +84,24 @@ public final class Subscription implements Serializable, Comparable<Subscription
         return topicFilterClient;
     }
 
+    /**
+     * Returns the original topic string the client sent, including the
+     * $share/sharename/ part for shared subscriptions.
+     *
+     * @return the original topic string.
+     */
+    public String getOriginalTopicWithSharename() {
+        if (shareName.isEmpty()) {
+            return topicFilterClient.toString();
+        }
+        return "$share/" + shareName.getShareName() + "/" + topicFilterClient.toString();
+    }
+
+    /**
+     * Check if the client topic was rewritten to a different internal topic.
+     *
+     * @return true if the client topic is different from the internal topic.
+     */
     public boolean isTopicRewritten() {
         return topicFilterInternal.equals(topicFilterClient);
     }
