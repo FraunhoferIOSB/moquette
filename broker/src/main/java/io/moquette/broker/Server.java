@@ -68,7 +68,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static io.moquette.broker.Session.INFINITE_EXPIRY;
-import static io.moquette.logging.LoggingUtils.getInterceptorIds;
+import io.moquette.interception.TopicRewriter;
+import io.moquette.logging.LoggingUtils;
 import io.moquette.logging.MetricsManager;
 
 public class Server {
@@ -80,6 +81,7 @@ public class Server {
     private NewNettyAcceptor acceptor;
     private volatile boolean initialized;
     private PostOffice dispatcher;
+    private TopicRewriter topicRewriter;
     private BrokerInterceptor interceptor;
     private H2Builder h2Builder;
     private SessionRegistry sessions;
@@ -181,7 +183,7 @@ public class Server {
         if (handlers == null) {
             handlers = Collections.emptyList();
         }
-        LOG.trace("Starting Moquette Server. MQTT message interceptors={}", getInterceptorIds(handlers));
+        LOG.trace("Starting Moquette Server. MQTT message interceptors={}", LoggingUtils.getInterceptorIds(handlers));
 
         MetricsManager.init(config);
 
@@ -264,6 +266,9 @@ public class Server {
         final MqttQoS serverGrantedQoS = parseMaxGrantedQoS(config);
         dispatcher = new PostOffice(subscriptions, retainedRepository, sessions, sessionsRepository, interceptor,
             authorizator, loopsGroup, clock, serverGrantedQoS);
+        if (topicRewriter != null) {
+            dispatcher.setTopicRewriter(topicRewriter);
+        }
         final BrokerConfiguration brokerConfig = new BrokerConfiguration(config);
         MQTTConnectionFactory connectionFactory = new MQTTConnectionFactory(brokerConfig, authenticator, sessions,
                                                                             dispatcher);
@@ -280,6 +285,13 @@ public class Server {
         }
 
         initialized = true;
+    }
+
+    public void setTopicRewriter(TopicRewriter topicRewriter) {
+        this.topicRewriter = topicRewriter;
+        if (dispatcher != null) {
+            dispatcher.setTopicRewriter(topicRewriter);
+        }
     }
 
     private static MqttQoS parseMaxGrantedQoS(IConfig config) {

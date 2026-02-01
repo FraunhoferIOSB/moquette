@@ -349,7 +349,7 @@ public class SessionRegistry {
     private void reactivateSubscriptions(Session session, String username) {
         //verify if subscription still satisfy read ACL permissions
         for (Subscription existingSub : session.getSubscriptions()) {
-            final boolean topicReadable = authorizator.canRead(existingSub.getTopicFilter(), username,
+            final boolean topicReadable = authorizator.canRead(existingSub.getTopicFilterInternal(), username,
                 session.getClientID());
             if (!topicReadable) {
                 subscriptionsDirectory.removeSubscription(existingSub);
