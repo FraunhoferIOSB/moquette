@@ -358,7 +358,12 @@ public class SessionRegistry {
             final boolean topicReadable = authorizator.canRead(existingSub.getTopicFilterInternal(), username,
                 session.getClientID());
             if (!topicReadable) {
-                subscriptionsDirectory.removeSubscription(existingSub);
+                if (existingSub.hasShareName()) {
+                    subscriptionsDirectory.removeSharedSubscription(existingSub);
+                } else {
+                    subscriptionsDirectory.removeSubscription(existingSub);
+                }
+                session.removeSubscription(existingSub.getTopicFilter());
             }
             // TODO
 //            subscriptionsDirectory.reactivate(existingSub.getTopicFilter(), session.getClientID());
@@ -367,7 +372,11 @@ public class SessionRegistry {
 
     private void unsubscribe(Session session) {
         for (Subscription existingSub : session.getSubscriptions()) {
-            subscriptionsDirectory.removeSubscription(existingSub);
+            if (existingSub.hasShareName()) {
+                subscriptionsDirectory.removeSharedSubscription(existingSub);
+            } else {
+                subscriptionsDirectory.removeSubscription(existingSub);
+            }
         }
     }
 
