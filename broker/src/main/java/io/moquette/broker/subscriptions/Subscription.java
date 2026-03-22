@@ -90,7 +90,7 @@ public final class Subscription implements Serializable, Comparable<Subscription
      *
      * @return the original topic string.
      */
-    public String getOriginalTopicWithSharename() {
+    public String getOriginalTopicFilterWithSharename() {
         if (shareName.isEmpty()) {
             return topicFilterClient.toString();
         }
