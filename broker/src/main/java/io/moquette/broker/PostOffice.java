@@ -396,18 +396,10 @@ class PostOffice {
                 return;
             }
 
-            List<Subscription> sharedSubscriptions = ackTopics.stream()
-                .filter(sub -> sub.qualityOfService() != FAILURE)
-                .filter(sub -> SharedSubscriptionUtils.isSharedSubscription(sub.topicFilter()))
-                .map((s) -> {
-                    final Subscription subscription = new Subscription(
-                        clientID,
-                        Topic.asTopic(SharedSubscriptionUtils.extractFilterFromShared(s.topicFilter())),
-                        s.option(),
-                        new ShareName(SharedSubscriptionUtils.extractShareName(s.topicFilter())), subscriptionIdOpt);
-                    subscription.setTopicFilterInternal(topicRewriter.rewriteTopic(subscription));
-                    return subscription;
-                })
+            List<Subscription> sharedSubscriptions = ackingSubsriptions.stream()
+                .filter(PostOffice::isNoFailure)
+                .filter(SharedSubscriptionUtils::isSharedSubscription)
+                .map(s -> buildSharedSubscriptionFrom(s, clientID, subscriptionIdOpt))
                 .collect(Collectors.toList());
 
             Optional<Subscription> invalidSharedSubscription = sharedSubscriptions.stream()
@@ -459,6 +451,16 @@ class PostOffice {
         for (Subscription subscription : newSubscriptions) {
             interceptor.notifyTopicSubscribed(subscription, username);
         }
+    }
+
+    private Subscription buildSharedSubscriptionFrom(MqttTopicSubscription s, String clientID, Optional<SubscriptionIdentifier> subscriptionIdOpt) {
+        final Subscription subscription = new Subscription(
+            clientID,
+            Topic.asTopic(SharedSubscriptionUtils.extractFilterFromShared(s.topicFilter())),
+            s.option(),
+            new ShareName(SharedSubscriptionUtils.extractShareName(s.topicFilter())), subscriptionIdOpt);
+        subscription.setTopicFilterInternal(topicRewriter.rewriteTopic(subscription));
+        return subscription;
     }
 
     private static boolean needToReceiveRetained(Utils.Couple<Boolean, Subscription> addedAndSub) {
