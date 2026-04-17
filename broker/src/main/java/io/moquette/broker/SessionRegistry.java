@@ -363,7 +363,7 @@ public class SessionRegistry {
                 } else {
                     subscriptionsDirectory.removeSubscription(existingSub);
                 }
-                session.removeSubscription(existingSub.getTopicFilter());
+                session.removeSubscription(existingSub.getTopicFilterClient());
             }
             // TODO
 //            subscriptionsDirectory.reactivate(existingSub.getTopicFilter(), session.getClientID());
