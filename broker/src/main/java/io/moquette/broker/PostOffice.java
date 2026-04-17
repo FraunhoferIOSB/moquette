@@ -59,7 +59,8 @@ import java.util.stream.Collectors;
 import static io.moquette.broker.Utils.messageId;
 import io.moquette.interception.TopicRewriter;
 import io.moquette.interception.TopicRewriterUnity;
-import io.moquette.logging.MetricsManager;
+import io.moquette.metrics.MetricsManager;
+import io.moquette.metrics.MetricsProvider;
 import static io.netty.handler.codec.mqtt.MqttMessageIdVariableHeader.from;
 import static io.netty.handler.codec.mqtt.MqttQoS.AT_MOST_ONCE;
 import static io.netty.handler.codec.mqtt.MqttQoS.EXACTLY_ONCE;
@@ -214,6 +215,8 @@ class PostOffice {
     private final ScheduledExpirationService<ISessionsRepository.Will> willExpirationService;
     private final ScheduledExpirationService<ExpirableTopic> retainedMessagesExpirationService;
     private final MqttQoS maxServerGrantedQos;
+    private final MetricsProvider metricsProvider;
+    
 
     static class ExpirableTopic implements Expirable {
 
@@ -236,22 +239,23 @@ class PostOffice {
      * */
     PostOffice(ISubscriptionsDirectory subscriptions, IRetainedRepository retainedRepository,
                SessionRegistry sessionRegistry, ISessionsRepository sessionRepository, BrokerInterceptor interceptor, Authorizator authorizator,
-               SessionEventLoopGroup sessionLoops) {
-        this(subscriptions, retainedRepository, sessionRegistry, sessionRepository, interceptor, authorizator, sessionLoops, Clock.systemDefaultZone());
+               SessionEventLoopGroup sessionLoops, MetricsProvider metricsProvider) {
+        this(subscriptions, retainedRepository, sessionRegistry, sessionRepository, interceptor, authorizator, sessionLoops, Clock.systemDefaultZone(), metricsProvider);
     }
 
     PostOffice(ISubscriptionsDirectory subscriptions, IRetainedRepository retainedRepository,
                SessionRegistry sessionRegistry, ISessionsRepository sessionRepository, BrokerInterceptor interceptor,
                Authorizator authorizator,
-               SessionEventLoopGroup sessionLoops, Clock clock) {
+               SessionEventLoopGroup sessionLoops, Clock clock, MetricsProvider metricsProvider) {
         this(subscriptions, retainedRepository, sessionRegistry, sessionRepository, interceptor, authorizator,
-            sessionLoops, clock, EXACTLY_ONCE);
+            sessionLoops, clock, EXACTLY_ONCE, metricsProvider);
     }
 
     PostOffice(ISubscriptionsDirectory subscriptions, IRetainedRepository retainedRepository,
                SessionRegistry sessionRegistry, ISessionsRepository sessionRepository, BrokerInterceptor interceptor,
                Authorizator authorizator,
-               SessionEventLoopGroup sessionLoops, Clock clock, MqttQoS maxServerGrantedQos) {
+               SessionEventLoopGroup sessionLoops, Clock clock, MqttQoS maxServerGrantedQos,
+               MetricsProvider metricsProvider) {
         this.authorizator = authorizator;
         this.subscriptions = subscriptions;
         this.retainedRepository = retainedRepository;
@@ -261,6 +265,7 @@ class PostOffice {
         this.sessionLoops = sessionLoops;
         this.clock = clock;
         this.maxServerGrantedQos = maxServerGrantedQos;
+        this.metricsProvider = metricsProvider;
 
         this.willExpirationService = new ScheduledExpirationService<>(clock, this::publishWill);
         recreateWillExpires(sessionRepository);
@@ -843,7 +848,7 @@ class PostOffice {
     private RoutingResults publish2Subscribers(String publisherClientId,
                                                Set<String> filterTargetClients, Instant messageExpiry,
                                                MqttPublishMessage msg) {
-        MetricsManager.getMetricsProvider().addPublish();
+        metricsProvider.addPublish();
         final boolean retainPublish = msg.fixedHeader().isRetain();
         final Topic topic = new Topic(msg.variableHeader().topicName());
         final MqttQoS publishingQos = msg.fixedHeader().qosLevel();
@@ -940,7 +945,7 @@ class PostOffice {
                 topic = sub.getTopicFilterClient();
             }
 
-            MetricsManager.getMetricsProvider().addMessage(SessionEventLoop.getThreadQueueId(), qos.value());
+            metricsProvider.addMessage(SessionEventLoop.getThreadQueueId(), qos.value());
             Collection<? extends MqttProperties.MqttProperty> existingProperties = msg.variableHeader().properties().listAll();
             final MqttProperties.MqttProperty[] properties = prepareSubscriptionProperties(sub, existingProperties);
             final SessionRegistry.PublishedMessage publishedMessage =

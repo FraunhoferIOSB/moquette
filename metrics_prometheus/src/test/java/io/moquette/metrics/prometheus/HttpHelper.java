@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 The original author or authors
+ * Copyright (c) 2012-2025 The original author or authors
  * ------------------------------------------------------
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -58,8 +58,7 @@ public class HttpHelper {
      * @return response-code and response(response body) of the HTTP GET in the
      * MAP format. If the response is not 200, the response(response body) will
      * be empty.
-     * @throws ParseException
-     * @throws IOException
+     * @throws IOException when fetching data fails.
      */
     public static HttpResponse doGet(final CloseableHttpClient httpClient, String urlString) throws IOException {
         LOGGER.debug("Getting: {}", urlString);

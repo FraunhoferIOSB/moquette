@@ -39,7 +39,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import static io.moquette.broker.Session.INFINITE_EXPIRY;
-import io.moquette.logging.MetricsManager;
+import io.moquette.metrics.MetricsManager;
+import io.moquette.metrics.MetricsProvider;
 
 public class SessionRegistry {
 
@@ -206,6 +207,7 @@ public class SessionRegistry {
     private final IQueueRepository queueRepository;
     private final Authorizator authorizator;
     private final Clock clock;
+    private final MetricsProvider metricsProvider;
 
     // Used in testing
     SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory,
@@ -213,8 +215,9 @@ public class SessionRegistry {
                     IQueueRepository queueRepository,
                     Authorizator authorizator,
                     ScheduledExecutorService scheduler,
-                    SessionEventLoopGroup loopsGroup) {
-        this(subscriptionsDirectory, sessionsRepository, queueRepository, authorizator, scheduler, Clock.systemDefaultZone(), INFINITE_EXPIRY, loopsGroup);
+                    SessionEventLoopGroup loopsGroup,
+                    MetricsProvider metricsProvider) {
+        this(subscriptionsDirectory, sessionsRepository, queueRepository, authorizator, scheduler, Clock.systemDefaultZone(), INFINITE_EXPIRY, loopsGroup, metricsProvider);
     }
 
     SessionRegistry(ISubscriptionsDirectory subscriptionsDirectory,
@@ -223,7 +226,8 @@ public class SessionRegistry {
                     Authorizator authorizator,
                     ScheduledExecutorService scheduler,
                     Clock clock, int globalExpirySeconds,
-                    SessionEventLoopGroup loopsGroup) {
+                    SessionEventLoopGroup loopsGroup,
+                    MetricsProvider metricsProvider) {
         this.subscriptionsDirectory = subscriptionsDirectory;
         this.sessionsRepository = sessionsRepository;
         this.queueRepository = queueRepository;
@@ -232,6 +236,7 @@ public class SessionRegistry {
         this.clock = clock;
         this.globalExpirySeconds = globalExpirySeconds;
         this.loopsGroup = loopsGroup;
+        this.metricsProvider = metricsProvider;
         recreateSessionPool();
     }
 
@@ -240,6 +245,7 @@ public class SessionRegistry {
         LOG.debug("Removing session {}, expired on {}", expiredSession.clientId(), expiredAt);
         remove(pool.get(expiredSession.clientId()));
         sessionsRepository.delete(expiredSession);
+
         subscriptionsDirectory.removeSharedSubscriptionsForClient(expiredSession.clientId());
     }
 
@@ -261,7 +267,7 @@ public class SessionRegistry {
                 queues.remove(session.clientId());
                 Session rehydrated = new Session(session, false, persistentQueue);
                 pool.put(session.clientId(), rehydrated);
-                MetricsManager.getMetricsProvider().addOpenSession();
+                metricsProvider.addOpenSession();
 
                 trackForRemovalOnExpiration(session);
             }
@@ -281,7 +287,7 @@ public class SessionRegistry {
 
             // publish the session
             final Session previous = pool.put(clientId, newSession);
-            MetricsManager.getMetricsProvider().addOpenSession();
+            metricsProvider.addOpenSession();
             if (previous != null) {
                 // if this happens mean that another Session Event Loop thread processed a CONNECT message
                 // with the same clientId. This is a bug because all messages for the same clientId should
@@ -310,10 +316,10 @@ public class SessionRegistry {
             // publish new session
             final Session newSession = createNewSession(msg, clientId);
             Session previous = pool.put(clientId, newSession);
-            MetricsManager.getMetricsProvider().addOpenSession();
+            metricsProvider.addOpenSession();
             if (previous != null) {
                 LOG.error("We're re-opening a session for clientId {} and we purged the old session, but there is still a session in the pool! this is a bug!", clientId);
-                MetricsManager.getMetricsProvider().removeOpenSession();
+                metricsProvider.removeOpenSession();
             }
 
             LOG.trace("case 2, oldSession with same CId {} disconnected", clientId);
@@ -505,7 +511,7 @@ public class SessionRegistry {
     void remove(Session session) {
         String clientID = session.getClientID();
         if (pool.remove(clientID, session)) {
-            MetricsManager.getMetricsProvider().removeOpenSession();
+            metricsProvider.removeOpenSession();
             unsubscribe(session);
             // remove from expired tracker if present
             sessionExpirationService.untrack(clientID);
