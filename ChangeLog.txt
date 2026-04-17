@@ -1,4 +1,6 @@
 Version 0.18.4-SNAPSHOT:
+   [feature] Added optional, configurable timeout to session queue offers.
+   [Cleanup] Improved metrics implementation handling.
    [feature] Added topic rewriting, allowing the internally used topic to be different from the topic the client used.
    [Cleanup] Cleaned up subscription handling.
 
