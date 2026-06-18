@@ -13,7 +13,6 @@
  *
  * You may elect to redistribute this code under either of these licenses.
  */
-
 package io.moquette.interception.messages;
 
 import io.netty.buffer.ByteBuf;
@@ -46,5 +45,9 @@ public class InterceptPublishMessage extends InterceptAbstractMessage {
 
     public String getUsername() {
         return username;
+    }
+
+    public MqttPublishMessage getMessage() {
+        return msg;
     }
 }
