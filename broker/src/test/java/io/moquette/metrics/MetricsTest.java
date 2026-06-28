@@ -116,12 +116,12 @@ public class MetricsTest {
             Assertions.fail("MetricsProvider should be of type MetricsProviderMock, found " + metricsProvider.getClass());
         }
 
-        assertEquals(0, mp.getSessionCount());
-        assertEquals(0, mp.getPublishCount());
-        assertEquals(0, mp.getMessageSum());
-        assertEquals(0, mp.getSessionQueueFillSum());
-        assertEquals(0, mp.getSessionQueueFillMax());
-        assertEquals(0, mp.getSessionQueueOverrunSum());
+        assertEquals(0, mp.getSessionCount(), "Incorrect value for metric 'SessionCount'");
+        assertEquals(0, mp.getPublishCount(), "Incorrect value for metric 'PublishCount'");
+        assertEquals(0, mp.getMessageSum(), "Incorrect value for metric 'MessageSum'");
+        assertEquals(0, mp.getSessionQueueFillSum(), "Incorrect value for metric 'SessionQueueFillSum'");
+        assertEquals(0, mp.getSessionQueueFillMax(), "Incorrect value for metric 'SessionQueueFillMax'");
+        assertEquals(0, mp.getSessionQueueOverrunSum(), "Incorrect value for metric 'SessionQueueOverrunSum'");
 
         clientListener.connect();
         clientListener.subscribe("test/topic");
@@ -129,15 +129,15 @@ public class MetricsTest {
         clientPublisher.publish("test/topic", "Hello world MQTT!!".getBytes(UTF_8), 2, false);
         Awaitility.await().until(messagesCollector::isMessageReceived);
 
-        assertEquals(2, mp.getSessionCount());
-        assertEquals(1, mp.getPublishCount());
-        assertEquals(1, mp.getMessageSum());
-        assertEquals(0, mp.getMessageSum(MqttQoS.AT_MOST_ONCE.value()));
-        assertEquals(1, mp.getMessageSum(MqttQoS.AT_LEAST_ONCE.value()));
-        assertEquals(0, mp.getMessageSum(MqttQoS.EXACTLY_ONCE.value()));
-        assertEquals(0, mp.getSessionQueueFillSum());
-        assertTrue(mp.getSessionQueueFillMax() > 0);
-        assertEquals(0, mp.getSessionQueueOverrunSum());
+        assertEquals(2, mp.getSessionCount(), "Incorrect value for metric 'SessionCount'");
+        assertEquals(1, mp.getPublishCount(), "Incorrect value for metric 'PublishCount'");
+        assertEquals(1, mp.getMessageSum(), "Incorrect value for metric 'MessageSum'");
+        assertEquals(0, mp.getMessageSum(MqttQoS.AT_MOST_ONCE.value()), "Incorrect value for metric 'MessageSum, QOS 0'");
+        assertEquals(1, mp.getMessageSum(MqttQoS.AT_LEAST_ONCE.value()), "Incorrect value for metric 'MessageSum, QOS 1'");
+        assertEquals(0, mp.getMessageSum(MqttQoS.EXACTLY_ONCE.value()), "Incorrect value for metric 'MessageSum, QOS 2'");
+        assertEquals(0, mp.getSessionQueueFillSum(), "Incorrect value for metric 'SessionQueueFillSum'");
+        assertTrue(mp.getSessionQueueFillMax() > 0, "Incorrect value for metric 'SessionQueueFillMax'");
+        assertEquals(0, mp.getSessionQueueOverrunSum(), "Incorrect value for metric 'SessionQueueOverrunSum'");
         mp.clearSessionQueueFillMax();
 
         clientListener.disconnect();
@@ -150,17 +150,16 @@ public class MetricsTest {
             // It's fine
         }
 
-        assertEquals(0, mp.getSessionCount());
-        assertEquals(1, mp.getPublishCount());
-        assertEquals(1, mp.getMessageSum());
-        assertEquals(0, mp.getMessageSum(MqttQoS.AT_MOST_ONCE.value()));
-        assertEquals(1, mp.getMessageSum(MqttQoS.AT_LEAST_ONCE.value()));
-        assertEquals(0, mp.getMessageSum(MqttQoS.EXACTLY_ONCE.value()));
-        assertEquals(0, mp.getSessionQueueFillSum());
-        assertTrue(mp.getSessionQueueFillMax() > 0);
-        assertEquals(0, mp.getSessionQueueOverrunSum());
+        assertEquals(0, mp.getSessionCount(), "Incorrect value for metric 'SessionCount'");
+        assertEquals(1, mp.getPublishCount(), "Incorrect value for metric 'PublishCount'");
+        assertEquals(1, mp.getMessageSum(), "Incorrect value for metric 'MessageSum'");
+        assertEquals(0, mp.getMessageSum(MqttQoS.AT_MOST_ONCE.value()), "Incorrect value for metric 'MessageSum, QOS 0'");
+        assertEquals(1, mp.getMessageSum(MqttQoS.AT_LEAST_ONCE.value()), "Incorrect value for metric 'MessageSum, QOS 1'");
+        assertEquals(0, mp.getMessageSum(MqttQoS.EXACTLY_ONCE.value()), "Incorrect value for metric 'MessageSum, QOS 2'");
+        assertEquals(0, mp.getSessionQueueFillSum(), "Incorrect value for metric 'SessionQueueFillSum'");
+        assertTrue(mp.getSessionQueueFillMax() > 0, "Incorrect value for metric 'SessionQueueFillMax'");
+        assertEquals(0, mp.getSessionQueueOverrunSum(), "Incorrect value for metric 'SessionQueueOverrunSum'");
         mp.clearSessionQueueFillMax();
-
     }
 
 }

@@ -119,15 +119,15 @@ public class MetricsProviderPrometheusTest {
         assertEquals(200, response.code, () -> "Error fetching metrics: " + metricsUrl);
         LOGGER.debug("Data: \n{}", response.response);
         Map<String, String> data = parseMetrics(response.response);
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_OPEN_SESSIONS));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_PUBLISHES_TOTAL));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL + "{QoS=\"0\",queue_name=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL + "{QoS=\"1\",queue_name=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL + "{QoS=\"2\",queue_name=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL + "{queue_id=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX + "{queue_id=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_OVERRUNS_TOTAL + "{queue_name=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX));
+        assertMetric(data, "0.0", METRIC_MOQUETTE_OPEN_SESSIONS);
+        assertMetric(data, "0.0", METRIC_MOQUETTE_PUBLISHES_TOTAL);
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL + "{QoS=\"0\",queue_name=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL + "{QoS=\"1\",queue_name=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL + "{QoS=\"2\",queue_name=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_FILL + "{queue_id=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX + "{queue_id=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_OVERRUNS_TOTAL + "{queue_name=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX);
 
         clientListener.connect();
         clientListener.subscribe("test/topic");
@@ -139,12 +139,12 @@ public class MetricsProviderPrometheusTest {
         assertEquals(200, response.code, () -> "Error fetching metrics: " + metricsUrl);
         LOGGER.debug("Data: \n{}", response.response);
         data = parseMetrics(response.response);
-        assertEquals("2.0", data.get(METRIC_MOQUETTE_OPEN_SESSIONS));
-        assertEquals("1.0", data.get(METRIC_MOQUETTE_PUBLISHES_TOTAL));
-        assertEquals("1.0", data.get(METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL + "{queue_id=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_OVERRUNS_TOTAL + "{queue_name=\"queue-0\"}"));
-        assertTrue(Double.parseDouble(data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX)) > 0.0);
+        assertMetric(data, "2.0", METRIC_MOQUETTE_OPEN_SESSIONS);
+        assertMetric(data, "1.0", METRIC_MOQUETTE_PUBLISHES_TOTAL);
+        assertMetric(data, "1.0", METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL);
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_FILL + "{queue_id=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_OVERRUNS_TOTAL + "{queue_name=\"queue-0\"}");
+        assertTrue(Double.parseDouble(data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX)) > 0.0, "Incorrect value for metric moquette_session_queue_fill_max, must be > 0.0");
 
         clientListener.disconnect();
         clientPublisher.disconnect();
@@ -153,24 +153,27 @@ public class MetricsProviderPrometheusTest {
         assertEquals(200, response.code, () -> "Error fetching metrics: " + metricsUrl);
         LOGGER.debug("Data: \n{}", response.response);
         data = parseMetrics(response.response);
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_OPEN_SESSIONS));
-        assertEquals("1.0", data.get(METRIC_MOQUETTE_PUBLISHES_TOTAL));
-        assertEquals("1.0", data.get(METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL + "{queue_id=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_OVERRUNS_TOTAL + "{queue_name=\"queue-0\"}"));
-        assertTrue(Double.parseDouble(data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX)) > 0.0);
+        assertMetric(data, "0.0", METRIC_MOQUETTE_OPEN_SESSIONS);
+        assertMetric(data, "1.0", METRIC_MOQUETTE_PUBLISHES_TOTAL);
+        assertMetric(data, "1.0", METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL);
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_FILL + "{queue_id=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_OVERRUNS_TOTAL + "{queue_name=\"queue-0\"}");
+        assertTrue(Double.parseDouble(data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX)) > 0.0, "Incorrect value for metric moquette_session_queue_fill_max, must be > 0.0");
 
         response = HttpHelper.doGet(metricsUrl);
         assertEquals(200, response.code, () -> "Error fetching metrics: " + metricsUrl);
         LOGGER.debug("Data: \n{}", response.response);
         data = parseMetrics(response.response);
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_OPEN_SESSIONS));
-        assertEquals("1.0", data.get(METRIC_MOQUETTE_PUBLISHES_TOTAL));
-        assertEquals("1.0", data.get(METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL + "{queue_id=\"queue-0\"}"));
-        assertEquals("0.0", data.get(METRIC_MOQUETTE_SESSION_QUEUE_OVERRUNS_TOTAL + "{queue_name=\"queue-0\"}"));
-        assertTrue(Double.parseDouble(data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX)) == 0.0);
+        assertMetric(data, "0.0", METRIC_MOQUETTE_OPEN_SESSIONS);
+        assertMetric(data, "1.0", METRIC_MOQUETTE_PUBLISHES_TOTAL);
+        assertMetric(data, "1.0", METRIC_MOQUETTE_SESSION_MESSAGES_TOTAL);
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_FILL + "{queue_id=\"queue-0\"}");
+        assertMetric(data, "0.0", METRIC_MOQUETTE_SESSION_QUEUE_OVERRUNS_TOTAL + "{queue_name=\"queue-0\"}");
+        assertTrue(Double.parseDouble(data.get(METRIC_MOQUETTE_SESSION_QUEUE_FILL_MAX)) == 0.0, "Incorrect value for metric moquette_session_queue_fill_max, must be > 0.0");
+    }
 
+    private void assertMetric(Map<String, String> data, String expected, String metric) {
+        assertEquals(expected, data.get(metric), "Incorrect value for metric " + metric);
     }
 
     private Map<String, String> parseMetrics(String response) {
