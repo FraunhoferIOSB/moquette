@@ -18,6 +18,7 @@ final class SessionEventLoop extends Thread {
     private final int queueId;
     private final MetricsProvider metricsProvider;
     private final int offerTimeoutMs;
+    private final boolean timeoutUsed;
     /**
      * Allows a task to fetch the id of the session queue that is executing it.
      */
@@ -25,10 +26,6 @@ final class SessionEventLoop extends Thread {
 
     public SessionEventLoop(int queueSize, int queueId, int offerTimeoutMs, MetricsProvider metricsProvider) {
         this(new ArrayBlockingQueue<>(queueSize), queueId, offerTimeoutMs, true, metricsProvider);
-    }
-
-    public SessionEventLoop(BlockingQueue<FutureTask<String>> taskQueue, int queueId, MetricsProvider metricsProvider) {
-        this(taskQueue, queueId, 0, true, metricsProvider);
     }
 
     /**
@@ -41,6 +38,7 @@ final class SessionEventLoop extends Thread {
         this.offerTimeoutMs = offerTimeoutMs;
         this.flushOnExit = flushOnExit;
         this.metricsProvider = metricsProvider;
+        this.timeoutUsed = offerTimeoutMs > 0;
     }
 
     public PostOffice.RouteResult addTask(String clientId, String actionDescription, SessionCommand cmd) {
@@ -57,14 +55,16 @@ final class SessionEventLoop extends Thread {
             metricsProvider.sessionQueueInc(queueId);
             return PostOffice.RouteResult.success(clientId, cmd.completableFuture());
         } else {
-            LOG.warn("Session command queue {} is full executing action {}, retrying for max {}ms", queueId, actionDescription, offerTimeoutMs);
-            try {
-                if (taskQueue.offer(task, offerTimeoutMs, TimeUnit.MILLISECONDS)) {
-                    metricsProvider.sessionQueueInc(queueId);
-                    return PostOffice.RouteResult.success(clientId, cmd.completableFuture());
+            if (timeoutUsed) {
+                LOG.warn("Session command queue {} is full executing action {}, retrying for max {}ms", queueId, actionDescription, offerTimeoutMs);
+                try {
+                    if (taskQueue.offer(task, offerTimeoutMs, TimeUnit.MILLISECONDS)) {
+                        metricsProvider.sessionQueueInc(queueId);
+                        return PostOffice.RouteResult.success(clientId, cmd.completableFuture());
+                    }
+                } catch (InterruptedException ex) {
+                    LOG.warn("Interrupted waiting too queue task");
                 }
-            } catch (InterruptedException ex) {
-                LOG.warn("Interrupted waiting too queue task");
             }
             LOG.error("Session command queue {} is full executing action {}, queue failed", queueId, actionDescription);
             metricsProvider.addSessionQueueOverrun(queueId);
