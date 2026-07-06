@@ -15,6 +15,7 @@
  */
 package io.moquette.broker;
 
+import io.moquette.BrokerConstants;
 import io.moquette.broker.scheduler.Expirable;
 import io.moquette.broker.scheduler.ScheduledExpirationService;
 import io.moquette.broker.subscriptions.ISubscriptionsDirectory;
@@ -785,6 +786,17 @@ class PostOffice {
     private RoutingResults publish2Subscribers(String publisherClientId,
                                                Instant messageExpiry,
                                                MqttPublishMessage msg) {
+        final String topicName = msg.variableHeader().topicName();
+        if (topicName.startsWith(BrokerConstants.RESPONSE_TOPIC_BASE)) {
+            final int startIdx = BrokerConstants.RESPONSE_TOPIC_BASE.length();
+            final Set<String> filter = new HashSet<>(1);
+            int endIdx = topicName.indexOf('/', startIdx);
+            if (endIdx < startIdx) {
+                endIdx = topicName.length();
+            }
+            filter.add(topicName.substring(startIdx, endIdx));
+            return publish2Subscribers(publisherClientId, filter, messageExpiry, msg);
+        }
         return publish2Subscribers(publisherClientId, NO_FILTER, messageExpiry, msg);
     }
 

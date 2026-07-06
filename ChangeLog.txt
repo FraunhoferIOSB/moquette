@@ -1,4 +1,5 @@
 Version 0.18.6-SNAPSHOT:
+   [fix] Fixed wildcard subscriptions returning responses to requests. (#893-4)
    [Cleanup] Moved MQTT-5 response base topic to a constant.
 
 Version 0.18.5:
