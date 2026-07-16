@@ -124,6 +124,9 @@
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.5</version>
+                    <configuration>
+                        <workingDirectory>target</workingDirectory>
+                    </configuration>
                 </plugin>
 
                 <plugin>
